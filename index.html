@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Boardwalk Boys — Founder OS</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f7f7f5; --bg3: #f0efeb;
+    --text: #1a1a1a; --text2: #666; --text3: #999;
+    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+    --radius: 8px; --radius-lg: 12px;
+    --green: #3B6D11; --green-bg: #EAF3DE;
+    --blue: #185FA5; --blue-bg: #E6F1FB;
+    --amber: #854F0B; --amber-bg: #FAEEDA;
+    --red: #A32D2D; --red-bg: #FCEBEB;
+    --gray: #5F5E5A; --gray-bg: #F1EFE8;
+    --purple: #534AB7; --purple-bg: #EEEDFE;
+    --teal: #0F6E56; --teal-bg: #E1F5EE;
+    --pink: #993556; --pink-bg: #FBEAF0;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; color: var(--text); background: var(--bg); }
+  #app { max-width: 960px; margin: 0 auto; padding: 0 1rem 4rem; }
+  h1 { font-size: 18px; font-weight: 600; padding: 1.25rem 0 0; }
+  .subtitle { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; }
+
+  /* tabs */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+  .tab { padding: 8px 16px; border: none; background: none; cursor: pointer; font-size: 13px; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: inherit; }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+
+  /* buttons */
+  .btn { padding: 6px 14px; border: 1px solid var(--border2); border-radius: var(--radius); background: transparent; cursor: pointer; font-size: 13px; font-family: inherit; color: var(--text); }
+  .btn:hover { background: var(--bg2); }
+  .btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn.primary:hover { opacity: 0.85; }
+  .btn.danger { color: var(--red); border-color: #F7C1C1; }
+  .btn.sm { padding: 3px 9px; font-size: 11px; }
+
+  /* toolbar */
+  .toolbar { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+
+  /* stats */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .stat { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; }
+  .stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 600; }
+
+  /* table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text2); font-weight: 500; white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover td { background: var(--bg2); }
+
+  /* badge */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+
+  /* modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.5rem; width: 520px; max-width: 95vw; max-height: 88vh; overflow-y: auto; }
+  .modal h3 { font-size: 16px; font-weight: 500; margin-bottom: 1.25rem; }
+  .form-row { margin-bottom: 12px; }
+  .form-row label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--border2); border-radius: var(--radius);
+    font-size: 13px; font-family: inherit; background: var(--bg); color: var(--text);
+  }
+  .form-row textarea { resize: vertical; min-height: 60px; }
+  .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
+
+  /* detail */
+  .detail-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; }
+  .back-btn { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 13px; font-family: inherit; }
+  .back-btn:hover { color: var(--text); }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .info-item .info-label { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
+  .notes-box { font-size: 13px; color: var(--text2); padding: 10px 12px; background: var(--bg2); border-radius: var(--radius); margin-bottom: 1.5rem; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .section-label { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* order card */
+  .order-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; }
+  .order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .order-items { font-size: 12px; color: var(--text2); }
+
+  /* pipeline */
+  .pipeline { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 4px; }
+
+  /* task */
+  .task-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .task-item:last-child { border-bottom: none; }
+  .task-done { text-decoration: line-through; opacity: 0.4; }
+
+  /* line items */
+  .li-grid { display: grid; grid-template-columns: 1fr 70px 80px 28px; gap: 4px; align-items: center; margin-bottom: 5px; }
+  .li-grid input, .li-grid select { padding: 5px 8px; border: 1px solid var(--border2); border-radius: 6px; font-size: 12px; font-family: inherit; background: var(--bg); color: var(--text); }
+
+  .empty { color: var(--text2); text-align: center; padding: 2rem 0; font-size: 13px; }
+
+  /* backup bar */
+  .backup-bar { border-top: 1px solid var(--border); margin-top: 2rem; padding-top: 1rem; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .backup-bar span { font-size: 12px; color: var(--text3); }
+  .file-label { padding: 6px 14px; border: 1px solid var(--border2); border-radius: var(--radius); cursor: pointer; font-size: 13px; }
+  .file-label:hover { background: var(--bg2); }
+
+  .loading { text-align: center; padding: 3rem; color: var(--text2); font-size: 13px; }
+  .error-msg { color: var(--red); font-size: 12px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>Boardwalk Boys</h1>
+  <p class="subtitle">Founder OS</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('stores')">Stores</button>
+    <button class="tab" onclick="switchTab('factories')">Factories</button>
+    <button class="tab" onclick="switchTab('tasks')">Tasks</button>
+    <button class="tab" onclick="switchTab('products')">Products</button>
+    <button class="tab" onclick="switchTab('accounts')">Accounts</button>
+  </div>
+
+  <div id="sec-stores"></div>
+  <div id="sec-factories" style="display:none"></div>
+  <div id="sec-tasks" style="display:none"></div>
+  <div id="sec-products" style="display:none"></div>
+  <div id="sec-accounts" style="display:none"></div>
+</div>
+
+<!-- STORE MODAL -->
+<div class="modal-overlay" id="modal-store">
+  <div class="modal">
+    <h3 id="mstore-title">Add store</h3>
+    <div class="form-row"><label>Store name *</label><input id="ms-name" placeholder="The Little Anchor"></div>
+    <div class="form-row"><label>Buyer name</label><input id="ms-buyer" placeholder="Sarah"></div>
+    <div class="form-row"><label>Location</label><input id="ms-loc" placeholder="Brooklyn, NY"></div>
+    <div class="form-row"><label>Status</label>
+      <select id="ms-status">
+        <option value="notyet">Not yet contacted</option>
+        <option value="maybe">Maybe / warm lead</option>
+        <option value="active">Active</option>
+        <option value="reorder">Reorder</option>
+        <option value="no">No / passed</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Email</label><input id="ms-email" placeholder="buyer@store.com"></div>
+    <div class="form-row"><label>Phone</label><input id="ms-phone"></div>
+    <div class="form-row"><label>Notes</label><textarea id="ms-notes" placeholder="How you met, vibe, brand fit..."></textarea></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('modal-store')">Cancel</button>
+      <button class="btn primary" onclick="saveStore()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="modal-order">
+  <div class="modal">
+    <h3>New order</h3>
+    <div class="form-row"><label>Order date</label><input type="date" id="mo-date"></div>
+    <div class="form-row"><label>PO / reference</label><input id="mo-po" placeholder="PO-001"></div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:6px">Line items</label>
+      <div class="li-grid" style="font-size:11px;color:var(--text2);margin-bottom:4px"><span>Product</span><span>Qty</span><span>Unit $</span><span></span></div>
+      <div id="mo-items"></div>
+      <button class="btn sm" style="margin-top:6px" onclick="addLineItem()">+ add item</button>
+      <div style="text-align:right;font-weight:600;margin-top:8px;font-size:14px" id="mo-total">Total: $0.00</div>
+    </div>
+    <div class="form-row"><label>Notes</label><textarea id="mo-notes" placeholder="Shipping notes, special requests..."></textarea></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('modal-order')">Cancel</button>
+      <button class="btn primary" onclick="saveOrder()">Save order</button>
+    </div>
+  </div>
+</div>
+
+<!-- FACTORY MODAL -->
+<div class="modal-overlay" id="modal-factory">
+  <div class="modal">
+    <h3 id="mfac-title">Add factory</h3>
+    <div class="form-row"><label>Factory name *</label><input id="mf-name" placeholder="Guangzhou Apparel Co."></div>
+    <div class="form-row"><label>Country</label><input id="mf-country" placeholder="China"></div>
+    <div class="form-row"><label>Contact name</label><input id="mf-contact" placeholder="Linda"></div>
+    <div class="form-row"><label>Email / WeChat</label><input id="mf-email"></div>
+    <div class="form-row"><label>Stage</label>
+      <select id="mf-stage">
+        <option value="outreach">Initial outreach</option>
+        <option value="rfq">RFQ sent</option>
+        <option value="srequested">Sample requested</option>
+        <option value="sreceived">Sample received</option>
+        <option value="sapproved">Sample approved</option>
+        <option value="inprod">In production</option>
+        <option value="dead">Dead / not moving forward</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Current style / sample</label><input id="mf-style" placeholder="Classic tee, 2T–YL"></div>
+    <div class="form-row"><label>MOQ</label><input id="mf-moq" placeholder="300"></div>
+    <div class="form-row"><label>Notes</label><textarea id="mf-notes" placeholder="Price per unit, timeline, concerns..."></textarea></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('modal-factory')">Cancel</button>
+      <button class="btn primary" onclick="saveFactory()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <h3>Add task</h3>
+    <div class="form-row"><label>Task *</label><input id="mt-task" placeholder="Follow up with buyer at Saltwater Kids"></div>
+    <div class="form-row"><label>Linked to</label><select id="mt-link"><option value="">— none —</option></select></div>
+    <div class="form-row"><label>Due date</label><input type="date" id="mt-due"></div>
+    <div class="form-row"><label>Priority</label>
+      <select id="mt-priority">
+        <option value="high">High</option>
+        <option value="med">Medium</option>
+        <option value="low">Low</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('modal-task')">Cancel</button>
+      <button class="btn primary" onclick="saveTask()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="modal-product">
+  <div class="modal">
+    <h3 id="mprod-title">Add product</h3>
+    <div class="form-row"><label>Style name *</label><input id="mp-name" placeholder="Classic Tee — Washed Blue"></div>
+    <div class="form-row"><label>SKU</label><input id="mp-sku" placeholder="BBT-WB-001"></div>
+    <div class="form-row"><label>Sizes offered</label><input id="mp-sizes" placeholder="12M, 18M, 2T, 3T, 4T, 5, 6, YS, YM, YL"></div>
+    <div class="form-row"><label>Wholesale price ($)</label><input type="number" id="mp-price" placeholder="18.00" step="0.01"></div>
+    <div class="form-row"><label>Retail price ($)</label><input type="number" id="mp-retail" placeholder="36.00" step="0.01"></div>
+    <div class="form-row"><label>Notes</label><textarea id="mp-notes" placeholder="Colorways, availability..."></textarea></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('modal-product')">Cancel</button>
+      <button class="btn primary" onclick="saveProduct()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNT MODAL -->
+<div class="modal-overlay" id="modal-account">
+  <div class="modal">
+    <h3 id="macct-title">Add account</h3>
+    <div class="form-row"><label>Service name *</label><input id="ma-name" placeholder="Supabase, Canva, SSActivewear..."></div>
+    <div class="form-row"><label>Category</label>
+      <select id="ma-category">
+        <option value="">— select —</option>
+        <option value="software">Software / SaaS</option>
+        <option value="supplier">Supplier</option>
+        <option value="marketplace">Marketplace</option>
+        <option value="banking">Banking / Finance</option>
+        <option value="marketing">Marketing</option>
+        <option value="shipping">Shipping / Logistics</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Login / username</label><input id="ma-username" placeholder="lauren@boardwalkboys.com"></div>
+    <div class="form-row"><label>Monthly cost ($) — enter 0 if free</label><input type="number" id="ma-cost" placeholder="0" step="0.01"></div>
+    <div class="form-row"><label>Billing cycle</label>
+      <select id="ma-billing">
+        <option value="free">Free</option>
+        <option value="monthly">Monthly</option>
+        <option value="annual">Annual</option>
+        <option value="one-time">One-time</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Renewal date</label><input type="date" id="ma-renewal"></div>
+    <div class="form-row"><label>Notes</label><textarea id="ma-notes" placeholder="What it's used for, login details location..."></textarea></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('modal-account')">Cancel</button>
+      <button class="btn primary" onclick="saveAccount()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://iqbilzsyqatjwwrtafjq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_2O_1hj0I6wfToTFSPtbi2Q_d3HyyIfz';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const STATUS_LABELS = {active:'Active',reorder:'Reorder',maybe:'Maybe / warm lead',no:'No / passed',notyet:'Not yet contacted'};
+const STATUS_COLOR = {active:['#3B6D11','#EAF3DE'],reorder:['#185FA5','#E6F1FB'],maybe:['#854F0B','#FAEEDA'],no:['#A32D2D','#FCEBEB'],notyet:['#5F5E5A','#F1EFE8']};
+const STAGE_LABELS = {outreach:'Initial outreach',rfq:'RFQ sent',srequested:'Sample requested',sreceived:'Sample received',sapproved:'Sample approved',inprod:'In production',dead:'Dead / not moving forward'};
+const STAGE_COLOR = {outreach:['#534AB7','#EEEDFE'],rfq:['#993556','#FBEAF0'],srequested:['#854F0B','#FAEEDA'],sreceived:['#185FA5','#E6F1FB'],sapproved:['#3B6D11','#EAF3DE'],inprod:['#0F6E56','#E1F5EE'],dead:['#5F5E5A','#F1EFE8']};
+const CAT_LABELS = {software:'Software / SaaS',supplier:'Supplier',marketplace:'Marketplace',banking:'Banking / Finance',marketing:'Marketing',shipping:'Shipping / Logistics',other:'Other'};
+const BILL_LABELS = {free:'Free',monthly:'Monthly',annual:'Annual','one-time':'One-time'};
+
+let currentTab = 'stores';
+let activeStore = null;
+let activeFactory = null;
+let editStoreId = null;
+let editFactoryId = null;
+let editProductId = null;
+let editAccountId = null;
+let orderStoreId = null;
+let products = [];
+
+function badge(label, colors) {
+  return `<span class="badge" style="color:${colors[0]};background:${colors[1]}">${label}</span>`;
+}
+function statusBadge(s) { return badge(STATUS_LABELS[s]||s, STATUS_COLOR[s]||['#888','#eee']); }
+function stageBadge(s) { return badge(STAGE_LABELS[s]||s, STAGE_COLOR[s]||['#888','#eee']); }
+
+function switchTab(t) {
+  currentTab = t;
+  activeStore = null; activeFactory = null;
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab')[['stores','factories','tasks','products','accounts'].indexOf(t)].classList.add('active');
+  ['stores','factories','tasks','products','accounts'].forEach(s => {
+    document.getElementById('sec-'+s).style.display = s===t ? 'block' : 'none';
+  });
+  render();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+async function render() {
+  if(currentTab==='stores') await renderStores();
+  if(currentTab==='factories') await renderFactories();
+  if(currentTab==='tasks') await renderTasks();
+  if(currentTab==='products') await renderProducts();
+  if(currentTab==='accounts') await renderAccounts();
+}
+
+// ---- STORES ----
+async function renderStores() {
+  const el = document.getElementById('sec-stores');
+  if(activeStore) { await renderStoreDetail(el); return; }
+  el.innerHTML = '<div class="loading">Loading...</div>';
+  const { data: stores } = await sb.from('stores').select('*').order('created_at');
+  const { data: orders } = await sb.from('orders').select('store_id, total');
+  const rev = (orders||[]).reduce((a,o)=>a+(parseFloat(o.total)||0),0);
+  const active = (stores||[]).filter(s=>s.status==='active'||s.status==='reorder').length;
+  const maybe = (stores||[]).filter(s=>s.status==='maybe').length;
+  const storeRevMap = {};
+  (orders||[]).forEach(o=>{ storeRevMap[o.store_id]=(storeRevMap[o.store_id]||0)+(parseFloat(o.total)||0); });
+  const storeOrderCount = {};
+  (orders||[]).forEach(o=>{ storeOrderCount[o.store_id]=(storeOrderCount[o.store_id]||0)+1; });
+
+  el.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-label">Total stores</div><div class="stat-val">${(stores||[]).length}</div></div>
+      <div class="stat"><div class="stat-label">Active / reorder</div><div class="stat-val">${active}</div></div>
+      <div class="stat"><div class="stat-label">Warm leads</div><div class="stat-val">${maybe}</div></div>
+      <div class="stat"><div class="stat-label">Revenue</div><div class="stat-val">$${rev.toLocaleString('en-US',{maximumFractionDigits:0})}</div></div>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary" onclick="openAddStore()">+ add store</button>
+      <button class="btn" onclick="exportStoresCSV()">export CSV</button>
+    </div>
+    ${!(stores||[]).length ? '<div class="empty">No stores yet. Add your first one.</div>' : `
+    <table>
+      <thead><tr><th>Store</th><th>Buyer</th><th>Location</th><th>Status</th><th>Orders</th><th>Revenue</th><th></th></tr></thead>
+      <tbody>${(stores||[]).map(s=>`<tr class="clickable" onclick="openStoreDetail('${s.id}')">
+        <td><strong>${s.name}</strong></td>
+        <td>${s.buyer||'—'}</td><td>${s.location||'—'}</td>
+        <td>${statusBadge(s.status)}</td>
+        <td>${storeOrderCount[s.id]||0}</td>
+        <td>$${(storeRevMap[s.id]||0).toFixed(2)}</td>
+        <td onclick="event.stopPropagation()">
+          <button class="btn sm" onclick="editStore('${s.id}',${JSON.stringify(s).replace(/"/g,'&quot;')})">edit</button>
+          <button class="btn sm danger" onclick="deleteStore('${s.id}')">del</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`}`;
+}
+
+async function renderStoreDetail(el) {
+  const { data: s } = await sb.from('stores').select('*').eq('id', activeStore).single();
+  const { data: orders } = await sb.from('orders').select('*').eq('store_id', activeStore).order('created_at');
+  if(!s){activeStore=null;await renderStores();return;}
+  el.innerHTML = `
+    <div class="detail-header">
+      <button class="back-btn" onclick="activeStore=null;renderStores()">← back</button>
+      <span style="font-size:17px;font-weight:500">${s.name}</span>
+      ${statusBadge(s.status)}
+    </div>
+    <div class="info-grid">
+      ${[['Buyer',s.buyer],['Location',s.location],['Email',s.email],['Phone',s.phone]].map(([l,v])=>`<div class="info-item"><div class="info-label">${l}</div><div>${v||'—'}</div></div>`).join('')}
+    </div>
+    ${s.notes?`<div class="notes-box">${s.notes}</div>`:''}
+    <div class="section-header">
+      <div class="section-label">Orders</div>
+      <button class="btn sm primary" onclick="openAddOrder('${s.id}')">+ new order</button>
+    </div>
+    ${!(orders||[]).length?'<div class="empty">No orders yet.</div>':''}
+    ${(orders||[]).map((o,i)=>`<div class="order-card">
+      <div class="order-card-header">
+        <span><strong>${o.po||'Order '+(i+1)}</strong> <span style="color:var(--text2);font-size:12px;margin-left:6px">${o.date||''}</span></span>
+        <span><strong>$${parseFloat(o.total||0).toFixed(2)}</strong>
+          <button class="btn sm danger" style="margin-left:8px" onclick="deleteOrder('${o.id}')">del</button>
+        </span>
+      </div>
+      <div class="order-items">${(o.items||[]).map(it=>`${it.name||'Item'} × ${it.qty} @ $${parseFloat(it.price||0).toFixed(2)}`).join('<br>')}</div>
+      ${o.notes?`<div style="margin-top:6px;font-size:12px;color:var(--text2)">${o.notes}</div>`:''}
+    </div>`).join('')}`;
+}
+
+function openAddStore() {
+  editStoreId = null;
+  document.getElementById('mstore-title').textContent = 'Add store';
+  ['name','buyer','loc','email','phone','notes'].forEach(f=>document.getElementById('ms-'+f).value='');
+  document.getElementById('ms-status').value='notyet';
+  openModal('modal-store');
+}
+function editStore(id, s) {
+  if(typeof s==='string') s=JSON.parse(s.replace(/&quot;/g,'"'));
+  editStoreId=id;
+  document.getElementById('mstore-title').textContent='Edit store';
+  document.getElementById('ms-name').value=s.name||'';
+  document.getElementById('ms-buyer').value=s.buyer||'';
+  document.getElementById('ms-loc').value=s.location||'';
+  document.getElementById('ms-status').value=s.status||'notyet';
+  document.getElementById('ms-email').value=s.email||'';
+  document.getElementById('ms-phone').value=s.phone||'';
+  document.getElementById('ms-notes').value=s.notes||'';
+  openModal('modal-store');
+}
+async function saveStore() {
+  const name=document.getElementById('ms-name').value.trim();
+  if(!name)return;
+  const data={name,buyer:document.getElementById('ms-buyer').value.trim(),location:document.getElementById('ms-loc').value.trim(),status:document.getElementById('ms-status').value,email:document.getElementById('ms-email').value.trim(),phone:document.getElementById('ms-phone').value.trim(),notes:document.getElementById('ms-notes').value.trim()};
+  if(editStoreId) await sb.from('stores').update(data).eq('id',editStoreId);
+  else await sb.from('stores').insert(data);
+  closeModal('modal-store'); await renderStores();
+}
+async function deleteStore(id) {
+  if(!confirm('Delete this store and all its orders?'))return;
+  await sb.from('stores').delete().eq('id',id);
+  await renderStores();
+}
+function openStoreDetail(id){activeStore=id;renderStores();}
+
+// ---- ORDERS ----
+function openAddOrder(storeId) {
+  orderStoreId=storeId;
+  document.getElementById('mo-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('mo-po').value='';
+  document.getElementById('mo-notes').value='';
+  document.getElementById('mo-items').innerHTML='';
+  document.getElementById('mo-total').textContent='Total: $0.00';
+  addLineItem(); openModal('modal-order');
+}
+function addLineItem() {
+  const c=document.getElementById('mo-items');
+  const d=document.createElement('div'); d.className='li-grid';
+  const opts=products.map(p=>`<option value="${p.name}" data-price="${p.price}">${p.name}</option>`).join('');
+  d.innerHTML=`<select onchange="autoPrice(this)" style="font-size:12px"><option value="">— custom —</option>${opts}</select><input type="number" min="0" value="1" oninput="calcTotal()"><input type="number" min="0" step="0.01" placeholder="0.00" oninput="calcTotal()"><button onclick="this.parentElement.remove();calcTotal()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px">×</button>`;
+  c.appendChild(d); calcTotal();
+}
+function autoPrice(sel){const p=sel.options[sel.selectedIndex].dataset.price;if(p){sel.parentElement.querySelectorAll('input')[1].value=p;}calcTotal();}
+function calcTotal(){let t=0;document.querySelectorAll('#mo-items .li-grid').forEach(r=>{const inp=r.querySelectorAll('input');t+=(parseFloat(inp[0].value)||0)*(parseFloat(inp[1].value)||0);});document.getElementById('mo-total').textContent='Total: $'+t.toFixed(2);}
+async function saveOrder() {
+  const items=[];document.querySelectorAll('#mo-items .li-grid').forEach(r=>{const sel=r.querySelector('select');const inp=r.querySelectorAll('input');const qty=parseFloat(inp[0].value)||0;if(qty)items.push({name:sel.value||'Custom',qty,price:parseFloat(inp[1].value)||0});});
+  let total=items.reduce((a,i)=>a+i.qty*i.price,0);
+  await sb.from('orders').insert({store_id:orderStoreId,date:document.getElementById('mo-date').value,po:document.getElementById('mo-po').value.trim(),items,total,notes:document.getElementById('mo-notes').value.trim()});
+  closeModal('modal-order'); await renderStoreDetail(document.getElementById('sec-stores'));
+}
+async function deleteOrder(id){if(!confirm('Delete this order?'))return;await sb.from('orders').delete().eq('id',id);await renderStoreDetail(document.getElementById('sec-stores'));}
+
+// ---- FACTORIES ----
+async function renderFactories() {
+  const el=document.getElementById('sec-factories');
+  if(activeFactory){await renderFactoryDetail(el);return;}
+  el.innerHTML='<div class="loading">Loading...</div>';
+  const {data:factories}=await sb.from('factories').select('*').order('created_at');
+  el.innerHTML=`
+    <div class="toolbar">
+      <button class="btn primary" onclick="openAddFactory()">+ add factory</button>
+      <button class="btn" onclick="exportFactoriesCSV()">export CSV</button>
+    </div>
+    ${!(factories||[]).length?'<div class="empty">No factories yet.</div>':`
+    <table><thead><tr><th>Factory</th><th>Country</th><th>Contact</th><th>Stage</th><th>Current style</th><th></th></tr></thead>
+    <tbody>${(factories||[]).map(f=>`<tr class="clickable" onclick="openFactoryDetail('${f.id}')">
+      <td><strong>${f.name}</strong></td><td>${f.country||'—'}</td><td>${f.contact||'—'}</td>
+      <td>${stageBadge(f.stage)}</td><td>${f.style||'—'}</td>
+      <td onclick="event.stopPropagation()">
+        <button class="btn sm" onclick="editFactory('${f.id}',${JSON.stringify(f).replace(/"/g,'&quot;')})">edit</button>
+        <button class="btn sm danger" onclick="deleteFactory('${f.id}')">del</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`}`;
+}
+async function renderFactoryDetail(el) {
+  const {data:f}=await sb.from('factories').select('*').eq('id',activeFactory).single();
+  if(!f){activeFactory=null;await renderFactories();return;}
+  const stages=['outreach','rfq','srequested','sreceived','sapproved','inprod'];
+  const ci=stages.indexOf(f.stage);
+  el.innerHTML=`
+    <div class="detail-header">
+      <button class="back-btn" onclick="activeFactory=null;renderFactories()">← back</button>
+      <span style="font-size:17px;font-weight:500">${f.name}</span>
+      ${stageBadge(f.stage)}
+    </div>
+    <div class="pipeline">
+      <div style="font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px">Sample pipeline</div>
+      ${stages.map((s,si)=>`<div style="display:flex;align-items:center;gap:8px;padding:3px 0">
+        <div style="width:10px;height:10px;border-radius:50%;flex-shrink:0;background:${si<=ci&&f.stage!=='dead'?'#1D9E75':'rgba(0,0,0,0.15)'}"></div>
+        <span style="font-size:12px;font-weight:${si===ci?500:400};opacity:${si===ci?1:0.55}">${STAGE_LABELS[s]}</span>
+      </div>`).join('')}
+    </div>
+    <div class="info-grid">
+      ${[['Country',f.country],['Contact',f.contact],['Email / WeChat',f.email],['MOQ',f.moq],['Current style',f.style]].map(([l,v])=>`<div class="info-item"><div class="info-label">${l}</div><div>${v||'—'}</div></div>`).join('')}
+    </div>
+    ${f.notes?`<div class="notes-box">${f.notes}</div>`:''}`;
+}
+function openAddFactory(){editFactoryId=null;document.getElementById('mfac-title').textContent='Add factory';['name','country','contact','email','style','moq','notes'].forEach(f=>document.getElementById('mf-'+f).value='');document.getElementById('mf-stage').value='outreach';openModal('modal-factory');}
+function editFactory(id,f){if(typeof f==='string')f=JSON.parse(f.replace(/&quot;/g,'"'));editFactoryId=id;document.getElementById('mfac-title').textContent='Edit factory';document.getElementById('mf-name').value=f.name||'';document.getElementById('mf-country').value=f.country||'';document.getElementById('mf-contact').value=f.contact||'';document.getElementById('mf-email').value=f.email||'';document.getElementById('mf-stage').value=f.stage||'outreach';document.getElementById('mf-style').value=f.style||'';document.getElementById('mf-moq').value=f.moq||'';document.getElementById('mf-notes').value=f.notes||'';openModal('modal-factory');}
+async function saveFactory(){const name=document.getElementById('mf-name').value.trim();if(!name)return;const data={name,country:document.getElementById('mf-country').value.trim(),contact:document.getElementById('mf-contact').value.trim(),email:document.getElementById('mf-email').value.trim(),stage:document.getElementById('mf-stage').value,style:document.getElementById('mf-style').value.trim(),moq:document.getElementById('mf-moq').value.trim(),notes:document.getElementById('mf-notes').value.trim()};if(editFactoryId)await sb.from('factories').update(data).eq('id',editFactoryId);else await sb.from('factories').insert(data);closeModal('modal-factory');await renderFactories();}
+async function deleteFactory(id){if(!confirm('Delete this factory?'))return;await sb.from('factories').delete().eq('id',id);await renderFactories();}
+function openFactoryDetail(id){activeFactory=id;renderFactories();}
+
+// ---- TASKS ----
+async function renderTasks(){
+  const el=document.getElementById('sec-tasks');
+  el.innerHTML='<div class="loading">Loading...</div>';
+  const {data:tasks}=await sb.from('tasks').select('*').order('created_at');
+  const {data:stores}=await sb.from('stores').select('id,name');
+  const {data:factories}=await sb.from('factories').select('id,name');
+  const sel=document.getElementById('mt-link');
+  sel.innerHTML='<option value="">— none —</option>'+(stores||[]).map(s=>`<option value="${s.name}">${s.name} (store)</option>`).join('')+(factories||[]).map(f=>`<option value="${f.name}">${f.name} (factory)</option>`).join('');
+  const open=(tasks||[]).filter(t=>!t.done);
+  const done=(tasks||[]).filter(t=>t.done);
+  const pColor={high:'#A32D2D',med:'#854F0B',low:'#3B6D11'};
+  const pLabel={high:'High',med:'Med',low:'Low'};
+  const makeList=arr=>arr.map(t=>`<div class="task-item">
+    <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}',${!t.done})" style="margin-top:2px;cursor:pointer;flex-shrink:0">
+    <div style="flex:1"><div class="${t.done?'task-done':''}">${t.text}</div>
+    <div style="font-size:11px;color:var(--text2);margin-top:2px">${t.link?t.link+' · ':''}${t.due?'due '+t.due+' · ':''}<span style="color:${pColor[t.priority]};font-weight:500">${pLabel[t.priority]||''}</span></div></div>
+    <button class="btn sm danger" onclick="deleteTask('${t.id}')">del</button>
+  </div>`).join('');
+  el.innerHTML=`
+    <div class="toolbar"><button class="btn primary" onclick="openModal('modal-task')">+ add task</button></div>
+    ${!(tasks||[]).length?'<div class="empty">No tasks yet.</div>':''}
+    ${open.length?`<div style="margin-bottom:1.5rem"><div class="section-label" style="margin-bottom:6px">Open (${open.length})</div>${makeList(open)}</div>`:''}
+    ${done.length?`<div><div class="section-label" style="margin-bottom:6px">Done (${done.length})</div>${makeList(done)}</div>`:''}`;
+}
+async function saveTask(){const text=document.getElementById('mt-task').value.trim();if(!text)return;await sb.from('tasks').insert({text,link:document.getElementById('mt-link').value,due:document.getElementById('mt-due').value,priority:document.getElementById('mt-priority').value,done:false});closeModal('modal-task');document.getElementById('mt-task').value='';document.getElementById('mt-due').value='';await renderTasks();}
+async function toggleTask(id,done){await sb.from('tasks').update({done}).eq('id',id);await renderTasks();}
+async function deleteTask(id){if(!confirm('Delete task?'))return;await sb.from('tasks').delete().eq('id',id);await renderTasks();}
+
+// ---- PRODUCTS ----
+async function renderProducts(){
+  const el=document.getElementById('sec-products');
+  el.innerHTML='<div class="loading">Loading...</div>';
+  const {data}=await sb.from('products').select('*').order('created_at');
+  products=data||[];
+  el.innerHTML=`
+    <div class="toolbar"><button class="btn primary" onclick="openAddProduct()">+ add product</button></div>
+    ${!products.length?'<div class="empty">No products yet. Add your SKUs here — they\'ll appear in the order builder.</div>':`
+    <table><thead><tr><th>Style</th><th>SKU</th><th>Sizes</th><th>Wholesale</th><th>Retail</th><th></th></tr></thead>
+    <tbody>${products.map(p=>`<tr>
+      <td><strong>${p.name}</strong></td>
+      <td style="color:var(--text2);font-size:12px">${p.sku||'—'}</td>
+      <td style="font-size:12px">${p.sizes||'—'}</td>
+      <td>$${parseFloat(p.price||0).toFixed(2)}</td>
+      <td>$${parseFloat(p.retail||0).toFixed(2)}</td>
+      <td>
+        <button class="btn sm" onclick="editProduct('${p.id}',${JSON.stringify(p).replace(/"/g,'&quot;')})">edit</button>
+        <button class="btn sm danger" onclick="deleteProduct('${p.id}')">del</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`}`;
+}
+function openAddProduct(){editProductId=null;document.getElementById('mprod-title').textContent='Add product';['name','sku','sizes','notes'].forEach(f=>document.getElementById('mp-'+f).value='');document.getElementById('mp-price').value='';document.getElementById('mp-retail').value='';openModal('modal-product');}
+function editProduct(id,p){if(typeof p==='string')p=JSON.parse(p.replace(/&quot;/g,'"'));editProductId=id;document.getElementById('mprod-title').textContent='Edit product';document.getElementById('mp-name').value=p.name||'';document.getElementById('mp-sku').value=p.sku||'';document.getElementById('mp-sizes').value=p.sizes||'';document.getElementById('mp-price').value=p.price||'';document.getElementById('mp-retail').value=p.retail||'';document.getElementById('mp-notes').value=p.notes||'';openModal('modal-product');}
+async function saveProduct(){const name=document.getElementById('mp-name').value.trim();if(!name)return;const data={name,sku:document.getElementById('mp-sku').value.trim(),sizes:document.getElementById('mp-sizes').value.trim(),price:parseFloat(document.getElementById('mp-price').value)||0,retail:parseFloat(document.getElementById('mp-retail').value)||0,notes:document.getElementById('mp-notes').value.trim()};if(editProductId)await sb.from('products').update(data).eq('id',editProductId);else await sb.from('products').insert(data);closeModal('modal-product');await renderProducts();}
+async function deleteProduct(id){if(!confirm('Delete this product?'))return;await sb.from('products').delete().eq('id',id);await renderProducts();}
+
+// ---- ACCOUNTS ----
+async function renderAccounts(){
+  const el=document.getElementById('sec-accounts');
+  el.innerHTML='<div class="loading">Loading...</div>';
+  const {data:accts}=await sb.from('accounts').select('*').order('created_at');
+  const monthly=(accts||[]).filter(a=>a.billing_cycle==='monthly').reduce((s,a)=>s+(parseFloat(a.cost)||0),0);
+  const annual=(accts||[]).filter(a=>a.billing_cycle==='annual').reduce((s,a)=>s+(parseFloat(a.cost)||0),0);
+  el.innerHTML=`
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-label">Total accounts</div><div class="stat-val">${(accts||[]).length}</div></div>
+      <div class="stat"><div class="stat-label">Monthly spend</div><div class="stat-val">$${monthly.toFixed(0)}/mo</div></div>
+      <div class="stat"><div class="stat-label">Annual spend</div><div class="stat-val">$${annual.toFixed(0)}/yr</div></div>
+    </div>
+    <div class="toolbar"><button class="btn primary" onclick="openAddAccount()">+ add account</button></div>
+    ${!(accts||[]).length?'<div class="empty">No accounts yet. Log all your tools, suppliers, and services here.</div>':`
+    <table><thead><tr><th>Service</th><th>Category</th><th>Login</th><th>Cost</th><th>Billing</th><th>Renewal</th><th></th></tr></thead>
+    <tbody>${(accts||[]).map(a=>`<tr>
+      <td><strong>${a.name}</strong>${a.notes?`<div style="font-size:11px;color:var(--text2);margin-top:2px">${a.notes}</div>`:''}</td>
+      <td style="font-size:12px">${CAT_LABELS[a.category]||a.category||'—'}</td>
+      <td style="font-size:12px;color:var(--text2)">${a.username||'—'}</td>
+      <td>${a.billing_cycle==='free'?'Free':'$'+parseFloat(a.cost||0).toFixed(2)}</td>
+      <td style="font-size:12px">${BILL_LABELS[a.billing_cycle]||a.billing_cycle||'—'}</td>
+      <td style="font-size:12px">${a.renewal_date||'—'}</td>
+      <td>
+        <button class="btn sm" onclick="editAccount('${a.id}',${JSON.stringify(a).replace(/"/g,'&quot;')})">edit</button>
+        <button class="btn sm danger" onclick="deleteAccount('${a.id}')">del</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`}`;
+}
+function openAddAccount(){editAccountId=null;document.getElementById('macct-title').textContent='Add account';['name','username','notes'].forEach(f=>document.getElementById('ma-'+f).value='');document.getElementById('ma-cost').value='0';document.getElementById('ma-category').value='';document.getElementById('ma-billing').value='free';document.getElementById('ma-renewal').value='';openModal('modal-account');}
+function editAccount(id,a){if(typeof a==='string')a=JSON.parse(a.replace(/&quot;/g,'"'));editAccountId=id;document.getElementById('macct-title').textContent='Edit account';document.getElementById('ma-name').value=a.name||'';document.getElementById('ma-category').value=a.category||'';document.getElementById('ma-username').value=a.username||'';document.getElementById('ma-cost').value=a.cost||'0';document.getElementById('ma-billing').value=a.billing_cycle||'free';document.getElementById('ma-renewal').value=a.renewal_date||'';document.getElementById('ma-notes').value=a.notes||'';openModal('modal-account');}
+async function saveAccount(){const name=document.getElementById('ma-name').value.trim();if(!name)return;const data={name,category:document.getElementById('ma-category').value,username:document.getElementById('ma-username').value.trim(),cost:parseFloat(document.getElementById('ma-cost').value)||0,billing_cycle:document.getElementById('ma-billing').value,renewal_date:document.getElementById('ma-renewal').value,notes:document.getElementById('ma-notes').value.trim()};if(editAccountId)await sb.from('accounts').update(data).eq('id',editAccountId);else await sb.from('accounts').insert(data);closeModal('modal-account');await renderAccounts();}
+async function deleteAccount(id){if(!confirm('Delete this account?'))return;await sb.from('accounts').delete().eq('id',id);await renderAccounts();}
+
+// ---- EXPORT ----
+async function exportStoresCSV(){
+  const {data:stores}=await sb.from('stores').select('*');
+  const {data:orders}=await sb.from('orders').select('store_id,total');
+  const rev={};const cnt={};
+  (orders||[]).forEach(o=>{rev[o.store_id]=(rev[o.store_id]||0)+(parseFloat(o.total)||0);cnt[o.store_id]=(cnt[o.store_id]||0)+1;});
+  const headers=['Name','Buyer','Location','Status','Email','Phone','Orders','Revenue','Notes'];
+  const rows=(stores||[]).map(s=>[s.name,s.buyer,s.location,STATUS_LABELS[s.status],s.email,s.phone,cnt[s.id]||0,(rev[s.id]||0).toFixed(2),s.notes]);
+  dlCSV(headers,rows,'bb-stores.csv');
+}
+async function exportFactoriesCSV(){
+  const {data:factories}=await sb.from('factories').select('*');
+  const headers=['Name','Country','Contact','Email','Stage','Style','MOQ','Notes'];
+  const rows=(factories||[]).map(f=>[f.name,f.country,f.contact,f.email,STAGE_LABELS[f.stage],f.style,f.moq,f.notes]);
+  dlCSV(headers,rows,'bb-factories.csv');
+}
+function dlCSV(headers,rows,filename){
+  const csv=[headers,...rows].map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=filename;a.click();
+}
+
+// ---- INIT ----
+renderStores();
+</script>
+</body>
+</html>
