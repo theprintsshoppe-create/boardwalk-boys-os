@@ -505,6 +505,11 @@ async function saveOrder() {
   await sb.from('orders').insert({store_id:orderStoreId,date:document.getElementById('mo-date').value,po:document.getElementById('mo-po').value.trim(),items,total,notes:document.getElementById('mo-notes').value.trim()});
   closeModal('modal-order'); await renderStoreDetail(document.getElementById('sec-stores'));
 }
+async function toggleOrderStatus(id, current) {
+  const newStatus = current === 'complete' ? 'inprogress' : 'complete';
+  await sb.from('orders').update({ status: newStatus }).eq('id', id);
+  await renderStoreDetail(document.getElementById('sec-stores'));
+}
 async function deleteOrder(id){if(!confirm('Delete this order?'))return;await sb.from('orders').delete().eq('id',id);await renderStoreDetail(document.getElementById('sec-stores'));}
 
 // ---- FACTORIES ----
