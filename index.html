@@ -768,7 +768,12 @@ async function saveLinesheetProducts() {
 }
 
 // ---- INIT ----
-renderStores();
+async function init() {
+  const { data } = await sb.from('products').select('*').order('name');
+  products = data || [];
+  renderStores();
+}
+init();
 </script>
 </body>
 </html>
