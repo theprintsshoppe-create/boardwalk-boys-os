@@ -437,7 +437,10 @@ async function renderStoreDetail(el) {
           <button class="btn sm danger" style="margin-left:8px" onclick="deleteOrder('${o.id}')">del</button>
         </span>
       </div>
-      <div class="order-items">${(o.items||[]).map(it=>`${it.name||'Item'} × ${it.qty} @ $${parseFloat(it.price||0).toFixed(2)}`).join('<br>')}</div>
+      <div class="order-items">${(o.items||[]).map(it=>{
+        const sizeStr = it.sizes ? Object.entries(it.sizes).map(([s,q])=>`${s}: ${q}`).join(', ') : (it.size||'');
+        return `${it.name} — ${sizeStr} (total: ${it.qty}) @ ${parseFloat(it.price||0).toFixed(2)}`;
+      }).join('<br>')}</div>
       ${o.notes?`<div style="margin-top:6px;font-size:12px;color:var(--text2)">${o.notes}</div>`:''}
     </div>`).join('')}`;
 }
