@@ -162,7 +162,7 @@
 <!-- ORDER MODAL -->
 <div class="modal-overlay" id="modal-order">
   <div class="modal">
-    <h3>New order</h3>
+    <h3 id="morder-title">New order</h3>
     <div class="form-row"><label>Order date</label><input type="date" id="mo-date"></div>
     <div class="form-row"><label>PO / reference</label><input id="mo-po" placeholder="PO-001"></div>
     <div style="margin-bottom:12px">
@@ -432,8 +432,9 @@ async function renderStoreDetail(el) {
           ${orderStatusBadge(o.status)}
         </span>
         <span style="display:flex;align-items:center;gap:8px">
-          <strong>$${parseFloat(o.total||0).toFixed(2)}</strong>
+          <strong>${parseFloat(o.total||0).toFixed(2)}</strong>
           <button class="btn sm" onclick="toggleOrderStatus('${o.id}','${o.status||'inprogress'}')">${o.status==='complete'?'mark in progress':'mark complete'}</button>
+          <button class="btn sm" onclick="openEditOrder('${o.id}')">edit</button>
           <button class="btn sm danger" onclick="deleteOrder('${o.id}')">del</button>
         </span>
       </div>
@@ -481,14 +482,43 @@ async function deleteStore(id) {
 function openStoreDetail(id){activeStore=id;renderStores();}
 
 // ---- ORDERS ----
+let editOrderId = null;
+
 function openAddOrder(storeId) {
-  orderStoreId=storeId;
-  document.getElementById('mo-date').value=new Date().toISOString().slice(0,10);
-  document.getElementById('mo-po').value='';
-  document.getElementById('mo-notes').value='';
-  document.getElementById('mo-items').innerHTML='';
-  document.getElementById('mo-total').textContent='Total: $0.00';
+  editOrderId = null;
+  orderStoreId = storeId;
+  document.getElementById('morder-title').textContent = 'New order';
+  document.getElementById('mo-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('mo-po').value = '';
+  document.getElementById('mo-notes').value = '';
+  document.getElementById('mo-items').innerHTML = '';
+  document.getElementById('mo-total').textContent = 'Total: $0.00';
   addLineItem(); openModal('modal-order');
+}
+
+async function openEditOrder(orderId) {
+  const { data: o } = await sb.from('orders').select('*').eq('id', orderId).single();
+  if (!o) return;
+  editOrderId = orderId;
+  orderStoreId = o.store_id;
+  document.getElementById('morder-title').textContent = 'Edit order';
+  document.getElementById('mo-date').value = o.date || '';
+  document.getElementById('mo-po').value = o.po || '';
+  document.getElementById('mo-notes').value = o.notes || '';
+  document.getElementById('mo-items').innerHTML = '';
+  (o.items || []).forEach(item => {
+    const c = document.getElementById('mo-items');
+    const d = document.createElement('div'); d.className = 'li-grid';
+    const opts = products.map(p => `<option value="${p.name}" data-price="${p.price}">${p.name}</option>`).join('');
+    d.innerHTML = `<select onchange="autoPrice(this)" style="font-size:12px"><option value="">— custom —</option>${opts}</select><input type="number" min="0" value="${item.qty||1}" oninput="calcTotal()"><input type="number" min="0" step="0.01" value="${item.price||0}" oninput="calcTotal()"><button onclick="this.parentElement.remove();calcTotal()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px">×</button>`;
+    c.appendChild(d);
+    const sel = d.querySelector('select');
+    const existing = products.find(p => p.name === item.name);
+    if (existing) sel.value = item.name;
+    else { const opt = document.createElement('option'); opt.value = item.name; opt.textContent = item.name; sel.appendChild(opt); sel.value = item.name; }
+  });
+  calcTotal();
+  openModal('modal-order');
 }
 function addLineItem() {
   const c=document.getElementById('mo-items');
@@ -502,7 +532,9 @@ function calcTotal(){let t=0;document.querySelectorAll('#mo-items .li-grid').for
 async function saveOrder() {
   const items=[];document.querySelectorAll('#mo-items .li-grid').forEach(r=>{const sel=r.querySelector('select');const inp=r.querySelectorAll('input');const qty=parseFloat(inp[0].value)||0;if(qty)items.push({name:sel.value||'Custom',qty,price:parseFloat(inp[1].value)||0});});
   let total=items.reduce((a,i)=>a+i.qty*i.price,0);
-  await sb.from('orders').insert({store_id:orderStoreId,date:document.getElementById('mo-date').value,po:document.getElementById('mo-po').value.trim(),items,total,notes:document.getElementById('mo-notes').value.trim(),status:'inprogress'});
+  const data={store_id:orderStoreId,date:document.getElementById('mo-date').value,po:document.getElementById('mo-po').value.trim(),items,total,notes:document.getElementById('mo-notes').value.trim()};
+  if(editOrderId) await sb.from('orders').update(data).eq('id',editOrderId);
+  else await sb.from('orders').insert({...data,status:'inprogress'});
   closeModal('modal-order'); await renderStoreDetail(document.getElementById('sec-stores'));
 }
 async function toggleOrderStatus(id, current) {
