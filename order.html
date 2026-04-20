@@ -303,17 +303,20 @@ function getOrderItems() {
     const row = document.getElementById('pr-' + pi);
     if (!row) return;
     const inputs = row.querySelectorAll('.size-qty');
+    const sizes = {};
+    let hasQty = false;
     inputs.forEach(inp => {
       const qty = parseInt(inp.value) || 0;
-      if (qty > 0) {
-        items.push({
-          name: p.name,
-          size: inp.dataset.size,
-          qty,
-          price: parseFloat(p.price || 0)
-        });
-      }
+      if (qty > 0) { sizes[inp.dataset.size] = qty; hasQty = true; }
     });
+    if (hasQty) {
+      items.push({
+        name: p.name,
+        sizes,
+        qty: Object.values(sizes).reduce((a,b)=>a+b,0),
+        price: parseFloat(p.price || 0)
+      });
+    }
   });
   return items;
 }
@@ -342,18 +345,18 @@ function goStep3() {
   if (total < 450) { alert(`Your order total is $${total.toFixed(2)}. The opening order minimum is $450.`); return; }
 
   const el = document.getElementById('order-summary');
-  el.innerHTML = `
+      el.innerHTML = `
     <table class="summary-table">
-      <thead><tr><th>Style</th><th>Size</th><th>Qty</th><th>Unit</th><th>Subtotal</th></tr></thead>
+      <thead><tr><th>Style</th><th>Sizes</th><th>Total qty</th><th>Unit</th><th>Subtotal</th></tr></thead>
       <tbody>
         ${items.map(i => `<tr>
           <td>${i.name}</td>
-          <td>${i.size}</td>
+          <td style="font-size:12px">${Object.entries(i.sizes).map(([s,q])=>`${s}: ${q}`).join(', ')}</td>
           <td>${i.qty}</td>
-          <td>$${i.price.toFixed(2)}</td>
-          <td>$${(i.qty * i.price).toFixed(2)}</td>
+          <td>${i.price.toFixed(2)}</td>
+          <td>${(i.qty * i.price).toFixed(2)}</td>
         </tr>`).join('')}
-        <tr class="total-row"><td colspan="4">Order total</td><td>$${total.toFixed(2)}</td></tr>
+        <tr class="total-row"><td colspan="4">Order total</td><td>${total.toFixed(2)}</td></tr>
       </tbody>
     </table>
     <p style="font-size:12px;color:var(--text3)">+ Shipping billed at cost on invoice</p>`;
