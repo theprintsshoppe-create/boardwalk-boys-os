@@ -31,7 +31,6 @@
   }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; color: var(--text); background: var(--bg); min-height: 100vh; }
 
-  /* header */
   .app-header { background: var(--accent); padding: 0; margin-bottom: 0; }
   .app-header-inner { max-width: 980px; margin: 0 auto; padding: 1.1rem 1.5rem; display: flex; align-items: baseline; gap: 12px; }
   .app-header h1 { font-size: 17px; font-weight: 600; color: #fff; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -39,31 +38,27 @@
 
   #app { max-width: 980px; margin: 0 auto; padding: 0 1.5rem 4rem; }
 
-  /* tabs */
   .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.75rem; padding-top: 1.25rem; }
   .tab { padding: 8px 18px; border: none; background: none; cursor: pointer; font-size: 13px; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: inherit; letter-spacing: 0.01em; transition: color 0.15s; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
 
-  /* buttons */
   .btn { padding: 7px 16px; border: 1px solid var(--border2); border-radius: var(--radius); background: transparent; cursor: pointer; font-size: 13px; font-family: inherit; color: var(--text); transition: background 0.15s; }
   .btn:hover { background: var(--bg2); }
   .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   .btn.primary:hover { background: #235e6c; border-color: #235e6c; }
+  .btn.primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn.danger { color: var(--red); border-color: rgba(150,48,48,0.25); }
   .btn.danger:hover { background: var(--red-light); }
   .btn.sm { padding: 3px 10px; font-size: 11px; border-radius: 6px; }
 
-  /* toolbar */
   .toolbar { display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
 
-  /* stats */
   .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 10px; margin-bottom: 1.75rem; }
   .stat { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
   .stat-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
   .stat-val { font-size: 24px; font-weight: 600; color: var(--text); }
 
-  /* table */
   table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   th { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text3); font-weight: 500; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; background: var(--bg2); }
   td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
@@ -71,16 +66,14 @@
   tr.clickable { cursor: pointer; }
   tr.clickable:hover td { background: var(--accent-light); }
 
-  /* badge */
   .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; white-space: nowrap; }
 
-  /* modal */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(20,15,8,0.45); z-index: 100; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--bg); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.75rem; width: 530px; max-width: 95vw; max-height: 88vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
   .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 1.25rem; color: var(--text); }
   .form-row { margin-bottom: 14px; }
-  .form-row label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-row label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
   .form-row input, .form-row select, .form-row textarea {
     width: 100%; padding: 8px 11px; border: 1px solid var(--border2); border-radius: var(--radius);
     font-size: 13px; font-family: inherit; background: #fff; color: var(--text);
@@ -89,7 +82,6 @@
   .form-row textarea { resize: vertical; min-height: 64px; }
   .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.5rem; }
 
-  /* detail */
   .detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
   .back-btn { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 13px; font-family: inherit; display: flex; align-items: center; gap: 4px; }
   .back-btn:hover { color: var(--accent); }
@@ -99,20 +91,16 @@
   .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .section-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
 
-  /* order card */
   .order-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; background: #fff; }
-  .order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
   .order-items { font-size: 12px; color: var(--text2); line-height: 1.7; }
 
-  /* pipeline */
   .pipeline { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 2px; }
 
-  /* task */
   .task-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .task-item:last-child { border-bottom: none; }
   .task-done { text-decoration: line-through; opacity: 0.35; }
 
-  /* line items */
   .li-grid { display: grid; grid-template-columns: 1fr 70px 80px 28px; gap: 4px; align-items: center; margin-bottom: 5px; }
   .li-grid input, .li-grid select { padding: 6px 8px; border: 1px solid var(--border2); border-radius: 6px; font-size: 12px; font-family: inherit; background: #fff; color: var(--text); }
 
@@ -121,6 +109,7 @@
 </style>
 </head>
 <body>
+
 <div class="app-header">
   <div class="app-header-inner">
     <h1>Boardwalk Boys</h1>
@@ -177,8 +166,8 @@
     <div class="form-row"><label>Order date</label><input type="date" id="mo-date"></div>
     <div class="form-row"><label>PO / reference</label><input id="mo-po" placeholder="PO-001"></div>
     <div style="margin-bottom:12px">
-      <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:6px">Line items</label>
-      <div class="li-grid" style="font-size:11px;color:var(--text2);margin-bottom:4px"><span>Product</span><span>Qty</span><span>Unit $</span><span></span></div>
+      <label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Line items</label>
+      <div class="li-grid" style="font-size:11px;color:var(--text3);margin-bottom:4px"><span>Product</span><span>Qty</span><span>Unit $</span><span></span></div>
       <div id="mo-items"></div>
       <button class="btn sm" style="margin-top:6px" onclick="addLineItem()">+ add item</button>
       <div style="text-align:right;font-weight:600;margin-top:8px;font-size:14px" id="mo-total">Total: $0.00</div>
@@ -258,31 +247,7 @@
   </div>
 </div>
 
-  <!-- LINE SHEET UPLOAD MODAL -->
-<div class="modal-overlay" id="modal-linesheet">
-  <div class="modal">
-    <h3>Import from line sheet</h3>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:1rem">Upload your PDF line sheet and AI will extract products and prices automatically.</p>
-    <div id="ls-drop" style="border:2px dashed var(--border2);border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer;margin-bottom:1rem" onclick="document.getElementById('ls-file').click()">
-      <div style="font-size:13px;color:var(--text2)" id="ls-drop-label">Click to choose PDF, or drag and drop here</div>
-      <input type="file" id="ls-file" accept=".pdf" style="display:none" onchange="handleLinesheetFile(event)">
-    </div>
-    <div id="ls-status" style="font-size:13px;color:var(--text2);margin-bottom:1rem;display:none"></div>
-    <div id="ls-preview" style="display:none">
-      <div class="section-label" style="margin-bottom:8px">Extracted products — review before saving</div>
-      <div id="ls-preview-table"></div>
-      <div class="form-actions" style="margin-top:1rem">
-        <button class="btn" onclick="closeModal('modal-linesheet')">Cancel</button>
-        <button class="btn primary" onclick="saveLinesheetProducts()">Save all products</button>
-      </div>
-    </div>
-    <div class="form-actions" id="ls-actions">
-      <button class="btn" onclick="closeModal('modal-linesheet')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-  <!-- ACCOUNT MODAL -->
+<!-- ACCOUNT MODAL -->
 <div class="modal-overlay" id="modal-account">
   <div class="modal">
     <h3 id="macct-title">Add account</h3>
@@ -318,6 +283,30 @@
   </div>
 </div>
 
+<!-- LINE SHEET UPLOAD MODAL -->
+<div class="modal-overlay" id="modal-linesheet">
+  <div class="modal">
+    <h3>Import from line sheet</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1rem">Upload your PDF line sheet and AI will extract products and prices automatically.</p>
+    <div id="ls-drop" style="border:2px dashed var(--border2);border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer;margin-bottom:1rem" onclick="document.getElementById('ls-file').click()">
+      <div style="font-size:13px;color:var(--text2)" id="ls-drop-label">Click to choose PDF, or drag and drop here</div>
+      <input type="file" id="ls-file" accept=".pdf" style="display:none" onchange="handleLinesheetFile(event)">
+    </div>
+    <div id="ls-status" style="font-size:13px;color:var(--text2);margin-bottom:1rem;display:none"></div>
+    <div id="ls-preview" style="display:none">
+      <div class="section-label" style="margin-bottom:8px">Extracted products — review before saving</div>
+      <div id="ls-preview-table"></div>
+      <div class="form-actions" style="margin-top:1rem">
+        <button class="btn" onclick="closeModal('modal-linesheet')">Cancel</button>
+        <button class="btn primary" onclick="saveLinesheetProducts()">Save all products</button>
+      </div>
+    </div>
+    <div class="form-actions" id="ls-actions">
+      <button class="btn" onclick="closeModal('modal-linesheet')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://iqbilzsyqatjwwrtafjq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_2O_1hj0I6wfToTFSPtbi2Q_d3HyyIfz';
@@ -345,6 +334,11 @@ function badge(label, colors) {
 }
 function statusBadge(s) { return badge(STATUS_LABELS[s]||s, STATUS_COLOR[s]||['#888','#eee']); }
 function stageBadge(s) { return badge(STAGE_LABELS[s]||s, STAGE_COLOR[s]||['#888','#eee']); }
+function orderStatusBadge(s) {
+  return s === 'complete'
+    ? `<span class="badge" style="color:#0F6E56;background:#E1F5EE">Complete</span>`
+    : `<span class="badge" style="color:#854F0B;background:#FAEEDA">In progress</span>`;
+}
 
 function switchTab(t) {
   currentTab = t;
@@ -432,16 +426,22 @@ async function renderStoreDetail(el) {
     ${!(orders||[]).length?'<div class="empty">No orders yet.</div>':''}
     ${(orders||[]).map((o,i)=>`<div class="order-card">
       <div class="order-card-header">
-        <span><strong>${o.po||'Order '+(i+1)}</strong> <span style="color:var(--text2);font-size:12px;margin-left:6px">${o.date||''}</span></span>
-        <span><strong>$${parseFloat(o.total||0).toFixed(2)}</strong>
-          <button class="btn sm danger" style="margin-left:8px" onclick="deleteOrder('${o.id}')">del</button>
+        <span style="display:flex;align-items:center;gap:8px">
+          <strong>${o.po||'Order '+(i+1)}</strong>
+          <span style="color:var(--text2);font-size:12px">${o.date||''}</span>
+          ${orderStatusBadge(o.status)}
+        </span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <strong>$${parseFloat(o.total||0).toFixed(2)}</strong>
+          <button class="btn sm" onclick="toggleOrderStatus('${o.id}','${o.status||'inprogress'}')">${o.status==='complete'?'mark in progress':'mark complete'}</button>
+          <button class="btn sm danger" onclick="deleteOrder('${o.id}')">del</button>
         </span>
       </div>
       <div class="order-items">${(o.items||[]).map(it=>{
         const sizeStr = it.sizes ? Object.entries(it.sizes).map(([s,q])=>`${s}: ${q}`).join(', ') : (it.size||'');
-        return `${it.name} — ${sizeStr} (total: ${it.qty}) @ ${parseFloat(it.price||0).toFixed(2)}`;
+        return `${it.name}${sizeStr?' — '+sizeStr:''} (total: ${it.qty}) @ $${parseFloat(it.price||0).toFixed(2)}`;
       }).join('<br>')}</div>
-      ${o.notes?`<div style="margin-top:6px;font-size:12px;color:var(--text2)">${o.notes}</div>`:''}
+      ${o.notes&&o.notes!=='Submitted via wholesale onboarding form'?`<div style="margin-top:6px;font-size:12px;color:var(--text2)">${o.notes}</div>`:''}
     </div>`).join('')}`;
 }
 
@@ -502,12 +502,12 @@ function calcTotal(){let t=0;document.querySelectorAll('#mo-items .li-grid').for
 async function saveOrder() {
   const items=[];document.querySelectorAll('#mo-items .li-grid').forEach(r=>{const sel=r.querySelector('select');const inp=r.querySelectorAll('input');const qty=parseFloat(inp[0].value)||0;if(qty)items.push({name:sel.value||'Custom',qty,price:parseFloat(inp[1].value)||0});});
   let total=items.reduce((a,i)=>a+i.qty*i.price,0);
-  await sb.from('orders').insert({store_id:orderStoreId,date:document.getElementById('mo-date').value,po:document.getElementById('mo-po').value.trim(),items,total,notes:document.getElementById('mo-notes').value.trim()});
+  await sb.from('orders').insert({store_id:orderStoreId,date:document.getElementById('mo-date').value,po:document.getElementById('mo-po').value.trim(),items,total,notes:document.getElementById('mo-notes').value.trim(),status:'inprogress'});
   closeModal('modal-order'); await renderStoreDetail(document.getElementById('sec-stores'));
 }
 async function toggleOrderStatus(id, current) {
   const newStatus = current === 'complete' ? 'inprogress' : 'complete';
-  await sb.from('orders').update({ status: newStatus }).eq('id', id);
+  await sb.from('orders').update({status: newStatus}).eq('id', id);
   await renderStoreDetail(document.getElementById('sec-stores'));
 }
 async function deleteOrder(id){if(!confirm('Delete this order?'))return;await sb.from('orders').delete().eq('id',id);await renderStoreDetail(document.getElementById('sec-stores'));}
@@ -577,7 +577,7 @@ async function renderTasks(){
   const pColor={high:'#A32D2D',med:'#854F0B',low:'#3B6D11'};
   const pLabel={high:'High',med:'Med',low:'Low'};
   const makeList=arr=>arr.map(t=>`<div class="task-item">
-    <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}',${!t.done})" style="margin-top:2px;cursor:pointer;flex-shrink:0">
+    <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}',${!t.done})" style="margin-top:2px;cursor:pointer;flex-shrink:0;accent-color:var(--accent)">
     <div style="flex:1"><div class="${t.done?'task-done':''}">${t.text}</div>
     <div style="font-size:11px;color:var(--text2);margin-top:2px">${t.link?t.link+' · ':''}${t.due?'due '+t.due+' · ':''}<span style="color:${pColor[t.priority]};font-weight:500">${pLabel[t.priority]||''}</span></div></div>
     <button class="btn sm danger" onclick="deleteTask('${t.id}')">del</button>
@@ -585,8 +585,8 @@ async function renderTasks(){
   el.innerHTML=`
     <div class="toolbar"><button class="btn primary" onclick="openModal('modal-task')">+ add task</button></div>
     ${!(tasks||[]).length?'<div class="empty">No tasks yet.</div>':''}
-    ${open.length?`<div style="margin-bottom:1.5rem"><div class="section-label" style="margin-bottom:6px">Open (${open.length})</div>${makeList(open)}</div>`:''}
-    ${done.length?`<div><div class="section-label" style="margin-bottom:6px">Done (${done.length})</div>${makeList(done)}</div>`:''}`;
+    ${open.length?`<div style="margin-bottom:1.5rem"><div class="section-label" style="margin-bottom:8px">Open (${open.length})</div>${makeList(open)}</div>`:''}
+    ${done.length?`<div><div class="section-label" style="margin-bottom:8px">Done (${done.length})</div>${makeList(done)}</div>`:''}`;
 }
 async function saveTask(){const text=document.getElementById('mt-task').value.trim();if(!text)return;await sb.from('tasks').insert({text,link:document.getElementById('mt-link').value,due:document.getElementById('mt-due').value,priority:document.getElementById('mt-priority').value,done:false});closeModal('modal-task');document.getElementById('mt-task').value='';document.getElementById('mt-due').value='';await renderTasks();}
 async function toggleTask(id,done){await sb.from('tasks').update({done}).eq('id',id);await renderTasks();}
@@ -596,7 +596,7 @@ async function deleteTask(id){if(!confirm('Delete task?'))return;await sb.from('
 async function renderProducts(){
   const el=document.getElementById('sec-products');
   el.innerHTML='<div class="loading">Loading...</div>';
-  const {data}=await sb.from('products').select('*').order('created_at');
+  const {data}=await sb.from('products').select('*').order('name');
   products=data||[];
   el.innerHTML=`
     <div class="toolbar">
@@ -606,7 +606,7 @@ async function renderProducts(){
     ${!products.length?'<div class="empty">No products yet. Add your SKUs here — they\'ll appear in the order builder.</div>':`
     <table><thead><tr><th>Style</th><th>SKU</th><th>Sizes</th><th>Wholesale</th><th>Retail</th><th></th></tr></thead>
     <tbody>${products.map(p=>`<tr>
-      <td><strong>${p.name}</strong></td>
+      <td><strong>${p.name}</strong>${p.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${p.notes}</div>`:''}</td>
       <td style="color:var(--text2);font-size:12px">${p.sku||'—'}</td>
       <td style="font-size:12px">${p.sizes||'—'}</td>
       <td>$${parseFloat(p.price||0).toFixed(2)}</td>
@@ -639,7 +639,7 @@ async function renderAccounts(){
     ${!(accts||[]).length?'<div class="empty">No accounts yet. Log all your tools, suppliers, and services here.</div>':`
     <table><thead><tr><th>Service</th><th>Category</th><th>Login</th><th>Cost</th><th>Billing</th><th>Renewal</th><th></th></tr></thead>
     <tbody>${(accts||[]).map(a=>`<tr>
-      <td><strong>${a.name}</strong>${a.notes?`<div style="font-size:11px;color:var(--text2);margin-top:2px">${a.notes}</div>`:''}</td>
+      <td><strong>${a.name}</strong>${a.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${a.notes}</div>`:''}</td>
       <td style="font-size:12px">${CAT_LABELS[a.category]||a.category||'—'}</td>
       <td style="font-size:12px;color:var(--text2)">${a.username||'—'}</td>
       <td>${a.billing_cycle==='free'?'Free':'$'+parseFloat(a.cost||0).toFixed(2)}</td>
@@ -655,27 +655,6 @@ function openAddAccount(){editAccountId=null;document.getElementById('macct-titl
 function editAccount(id,a){if(typeof a==='string')a=JSON.parse(a.replace(/&quot;/g,'"'));editAccountId=id;document.getElementById('macct-title').textContent='Edit account';document.getElementById('ma-name').value=a.name||'';document.getElementById('ma-category').value=a.category||'';document.getElementById('ma-username').value=a.username||'';document.getElementById('ma-cost').value=a.cost||'0';document.getElementById('ma-billing').value=a.billing_cycle||'free';document.getElementById('ma-renewal').value=a.renewal_date||'';document.getElementById('ma-notes').value=a.notes||'';openModal('modal-account');}
 async function saveAccount(){const name=document.getElementById('ma-name').value.trim();if(!name)return;const data={name,category:document.getElementById('ma-category').value,username:document.getElementById('ma-username').value.trim(),cost:parseFloat(document.getElementById('ma-cost').value)||0,billing_cycle:document.getElementById('ma-billing').value,renewal_date:document.getElementById('ma-renewal').value,notes:document.getElementById('ma-notes').value.trim()};if(editAccountId)await sb.from('accounts').update(data).eq('id',editAccountId);else await sb.from('accounts').insert(data);closeModal('modal-account');await renderAccounts();}
 async function deleteAccount(id){if(!confirm('Delete this account?'))return;await sb.from('accounts').delete().eq('id',id);await renderAccounts();}
-
-// ---- EXPORT ----
-async function exportStoresCSV(){
-  const {data:stores}=await sb.from('stores').select('*');
-  const {data:orders}=await sb.from('orders').select('store_id,total');
-  const rev={};const cnt={};
-  (orders||[]).forEach(o=>{rev[o.store_id]=(rev[o.store_id]||0)+(parseFloat(o.total)||0);cnt[o.store_id]=(cnt[o.store_id]||0)+1;});
-  const headers=['Name','Buyer','Location','Status','Email','Phone','Orders','Revenue','Notes'];
-  const rows=(stores||[]).map(s=>[s.name,s.buyer,s.location,STATUS_LABELS[s.status],s.email,s.phone,cnt[s.id]||0,(rev[s.id]||0).toFixed(2),s.notes]);
-  dlCSV(headers,rows,'bb-stores.csv');
-}
-async function exportFactoriesCSV(){
-  const {data:factories}=await sb.from('factories').select('*');
-  const headers=['Name','Country','Contact','Email','Stage','Style','MOQ','Notes'];
-  const rows=(factories||[]).map(f=>[f.name,f.country,f.contact,f.email,STAGE_LABELS[f.stage],f.style,f.moq,f.notes]);
-  dlCSV(headers,rows,'bb-factories.csv');
-}
-function dlCSV(headers,rows,filename){
-  const csv=[headers,...rows].map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=filename;a.click();
-}
 
 // ---- LINE SHEET IMPORT ----
 let extractedProducts = [];
@@ -697,16 +676,13 @@ async function handleLinesheetFile(e) {
   document.getElementById('ls-status').style.display = 'block';
   document.getElementById('ls-status').textContent = 'Reading PDF...';
   document.getElementById('ls-actions').style.display = 'none';
-
   const base64 = await new Promise((res, rej) => {
     const r = new FileReader();
     r.onload = () => res(r.result.split(',')[1]);
     r.onerror = () => rej(new Error('Read failed'));
     r.readAsDataURL(file);
   });
-
   document.getElementById('ls-status').textContent = 'Extracting products with AI...';
-
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -714,45 +690,28 @@ async function handleLinesheetFile(e) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'document',
-              source: { type: 'base64', media_type: 'application/pdf', data: base64 }
-            },
-            {
-              type: 'text',
-              text: `Extract all products from this line sheet. Return ONLY a JSON array, no other text, no markdown backticks. Each item should have: name (style name), sku (style/item number if present, else empty string), sizes (sizes offered as a comma-separated string), price (wholesale price as a number, 0 if not found), retail (retail price as a number, 0 if not found), notes (any other relevant details like colorways or fabric). Example format: [{"name":"Classic Tee","sku":"BBT-001","sizes":"2T, 3T, 4T","price":18,"retail":36,"notes":"Available in 3 colors"}]`
-            }
-          ]
-        }]
+        messages: [{ role: 'user', content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+          { type: 'text', text: `Extract all products from this line sheet. Return ONLY a JSON array, no other text, no markdown backticks. Each item: name, sku, sizes (comma-separated string), price (wholesale, number), retail (number), notes. Example: [{"name":"Classic Tee","sku":"","sizes":"2T, 3T, 4T","price":18,"retail":36,"notes":"Navy, single sided"}]` }
+        ]}]
       })
     });
-
     const data = await response.json();
-    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
-    const clean = text.replace(/```json|```/g, '').trim();
-    extractedProducts = JSON.parse(clean);
-
+    const text = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    extractedProducts = JSON.parse(text.replace(/```json|```/g,'').trim());
     document.getElementById('ls-status').style.display = 'none';
     document.getElementById('ls-preview').style.display = 'block';
-
     document.getElementById('ls-preview-table').innerHTML = `
       <table style="width:100%;font-size:12px;border-collapse:collapse">
         <thead><tr>
           <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500">Style</th>
-          <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500">SKU</th>
-          <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500">Sizes</th>
           <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500">Wholesale</th>
           <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500">Retail</th>
         </tr></thead>
-        <tbody>${extractedProducts.map((p,i) => `<tr>
-          <td style="padding:6px 8px;border-bottom:1px solid var(--border)"><input value="${p.name||''}" onchange="extractedProducts[${i}].name=this.value" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;color:var(--text)"></td>
-          <td style="padding:6px 8px;border-bottom:1px solid var(--border)"><input value="${p.sku||''}" onchange="extractedProducts[${i}].sku=this.value" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;color:var(--text)"></td>
-          <td style="padding:6px 8px;border-bottom:1px solid var(--border)"><input value="${p.sizes||''}" onchange="extractedProducts[${i}].sizes=this.value" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;color:var(--text)"></td>
-          <td style="padding:6px 8px;border-bottom:1px solid var(--border)"><input type="number" value="${p.price||0}" onchange="extractedProducts[${i}].price=parseFloat(this.value)||0" style="width:70px;border:none;background:transparent;font-size:12px;font-family:inherit;color:var(--text)"></td>
-          <td style="padding:6px 8px;border-bottom:1px solid var(--border)"><input type="number" value="${p.retail||0}" onchange="extractedProducts[${i}].retail=parseFloat(this.value)||0" style="width:70px;border:none;background:transparent;font-size:12px;font-family:inherit;color:var(--text)"></td>
+        <tbody>${extractedProducts.map((p,i)=>`<tr>
+          <td style="padding:6px 8px;border-bottom:1px solid var(--border)">${p.name||''}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid var(--border)">$${parseFloat(p.price||0).toFixed(2)}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid var(--border)">$${parseFloat(p.retail||0).toFixed(2)}</td>
         </tr>`).join('')}</tbody>
       </table>`;
   } catch(err) {
@@ -763,13 +722,31 @@ async function handleLinesheetFile(e) {
 
 async function saveLinesheetProducts() {
   if (!extractedProducts.length) return;
-  const rows = extractedProducts.filter(p => p.name).map(p => ({
-    name: p.name, sku: p.sku||'', sizes: p.sizes||'',
-    price: parseFloat(p.price)||0, retail: parseFloat(p.retail)||0, notes: p.notes||''
-  }));
+  const rows = extractedProducts.filter(p=>p.name).map(p=>({name:p.name,sku:p.sku||'',sizes:p.sizes||'',price:parseFloat(p.price)||0,retail:parseFloat(p.retail)||0,notes:p.notes||''}));
   await sb.from('products').insert(rows);
   closeModal('modal-linesheet');
   switchTab('products');
+}
+
+// ---- EXPORT ----
+async function exportStoresCSV(){
+  const {data:stores}=await sb.from('stores').select('*');
+  const {data:orders}=await sb.from('orders').select('store_id,total');
+  const rev={};const cnt={};
+  (orders||[]).forEach(o=>{rev[o.store_id]=(rev[o.store_id]||0)+(parseFloat(o.total)||0);cnt[o.store_id]=(cnt[o.store_id]||0)+1;});
+  const headers=['Name','Buyer','Location','Status','Email','Phone','Orders','Revenue','Notes'];
+  const rows=(stores||[]).map(s=>[s.name,s.buyer,s.location,STATUS_LABELS[s.status],s.email,s.phone,cnt[s.id]||0,(rev[s.id]||0).toFixed(2),s.notes]);
+  dlCSV(headers,rows,'bb-stores.csv');
+}
+async function exportFactoriesCSV(){
+  const {data:factories}=await sb.from('factories').select('*');
+  const headers=['Name','Country','Contact','Email','Stage','Style','MOQ','Notes'];
+  const rows=(factories||[]).map(f=>[f.name,f.country,f.contact,f.email,STAGE_LABELS[f.stage],f.style,f.moq,f.notes]);
+  dlCSV(headers,rows,'bb-factories.csv');
+}
+function dlCSV(headers,rows,filename){
+  const csv=[headers,...rows].map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=filename;a.click();
 }
 
 // ---- INIT ----
