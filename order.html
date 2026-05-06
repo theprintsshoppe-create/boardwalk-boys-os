@@ -260,6 +260,403 @@ let products = [];
 let orderData = {};
 
 async function loadProducts() {
+  const { data } = await sb.from('products').select('*').eq('active', true).order('name');
+  products = data || [];
+  renderProductList();
+}
+
+function renderProductList() {
+  const el = document.getElementById('product-list');
+  if (!products.length) {
+    el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text3)">No products available yet. Check back soon.</div>';
+    return;
+  }
+  el.innerHTML = products.map((p, pi) => {
+    const sizesAvailable = p.sizes ? p.sizes.split(',').map(s => s.trim()) : SIZES;
+    return `<div class="product-row" id="pr-${pi}">
+      <div class="product-name">${p.name}</div>
+      <div class="product-meta">Wholesale: $${parseFloat(p.price||0).toFixed(2)} · Sizes: ${sizesAvailable.join(', ')}</div>
+      <div class="size-grid">
+        ${sizesAvailable.map(size => `
+          <div class="size-input-wrap">
+            <div class="size-label">${size}</div>
+            <input type="number" min="0" value="" placeholder="0" class="size-qty"
+              data-product="${pi}" data-size="${size}"
+              oninput="updateRow(${pi})">
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateRow(pi) {
+  const row = document.getElementById('pr-' + pi);
+  const inputs = row.querySelectorAll('.size-qty');
+  let hasQty = false;
+  inputs.forEach(inp => { if (parseInt(inp.value) > 0) hasQty = true; });
+  row.classList.toggle('has-qty', hasQty);
+}
+
+function getOrderItems() {
+  const items = [];
+  products.forEach((p, pi) => {
+    const row = document.getElementById('pr-' + pi);
+    if (!row) return;
+    const inputs = row.querySelectorAll('.size-qty');
+    const sizes = {};
+    let hasQty = false;
+    inputs.forEach(inp => {
+      const qty = parseInt(inp.value) || 0;
+      if (qty > 0) { sizes[inp.dataset.size] = qty; hasQty = true; }
+    });
+    if (hasQty) {
+      items.push({
+        name: p.name,
+        sizes,
+        qty: Object.values(sizes).reduce((a,b)=>a+b,0),
+        price: parseFloat(p.price || 0)
+      });
+    }
+  });
+  return items;
+}
+
+function calcTotal(items) {
+  return items.reduce((a, i) => a + i.qty * i.price, 0);
+}
+
+function goStep2() {
+  const required = ['s-storename','s-firstname','s-lastname','s-email','s-address','s-city','s-state','s-taxid'];
+  let valid = true;
+  required.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('field-error'); valid = false; }
+    else el.classList.remove('field-error');
+  });
+  if (!valid) { alert('Please fill in all required fields.'); return; }
+  goToStep(2);
+  loadProducts();
+}
+
+function goStep3() {
+  const items = getOrderItems();
+  const total = calcTotal(items);
+  if (!items.length) { alert('Please add at least one item to your order.'); return; }
+  if (total < 450) { alert(`Your order total is $${total.toFixed(2)}. The opening order minimum is $450.`); return; }
+
+  const el = document.getElementById('order-summary');
+      el.innerHTML = `
+    <table class="summary-table">
+      <thead><tr><th>Style</th><th>Sizes</th><th>Total qty</th><th>Unit</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        ${items.map(i => `<tr>
+          <td>${i.name}</td>
+          <td style="font-size:12px">${Object.entries(i.sizes).map(([s,q])=>`${s}: ${q}`).join(', ')}</td>
+          <td>${i.qty}</td>
+          <td>${i.price.toFixed(2)}</td>
+          <td>${(i.qty * i.price).toFixed(2)}</td>
+        </tr>`).join('')}
+        <tr class="total-row"><td colspan="4">Order total</td><td>${total.toFixed(2)}</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:var(--text3)">+ Shipping billed at cost on invoice</p>`;
+
+  goToStep(3);
+}
+
+async function submitOrder() {
+  if (!document.getElementById('terms-check').checked) {
+    alert('Please accept the wholesale terms to continue.');
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const items = getOrderItems();
+  const total = calcTotal(items);
+  const storeName = document.getElementById('s-storename').value.trim();
+  const buyer = document.getElementById('s-firstname').value.trim() + ' ' + document.getElementById('s-lastname').value.trim();
+  const location = document.getElementById('s-city').value.trim() + ', ' + document.getElementById('s-state').value.trim();
+  const notes = [
+    'Address: ' + document.getElementById('s-address').value.trim() + ', ' + location,
+    'Tax ID: ' + document.getElementById('s-taxid').value.trim(),
+    document.getElementById('s-website').value.trim() ? 'Website: ' + document.getElementById('s-website').value.trim() : '',
+    document.getElementById('s-referral').value ? 'Referral: ' + document.getElementById('s-referral').value : ''
+  ].filter(Boolean).join(' | ');
+
+  try {
+    const { data: store, error: storeErr } = await sb.from('stores').insert({
+      name: storeName,
+      buyer,
+      location,
+      email: document.getElementById('s-email').value.trim(),
+      phone: document.getElementById('s-phone').value.trim(),
+      status: 'active',
+      notes
+    }).select().single();
+
+    if (storeErr) throw storeErr;
+
+    await sb.from('orders').insert({
+      store_id: store.id,
+      date: new Date().toISOString().slice(0, 10),
+      po: 'Opening order',
+      items,
+      total,
+      notes: 'Submitted via wholesale onboarding form'
+    });
+
+    goToStep(4);
+  } catch(err) {
+    alert('Something went wrong. Please try again or email hello@boardwalkboys.com');
+    btn.disabled = false;
+    btn.textContent = 'Submit order';
+  }
+}
+
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach((el, i) => el.classList.toggle('active', i === n - 1));
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    dot.classList.toggle('active', i === n);
+    dot.classList.toggle('done', i < n);
+  }
+  for (let i = 1; i <= 3; i++) {
+    const line = document.getElementById('line-' + i);
+    if (line) line.classList.toggle('done', i < n);
+  }
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
+  .card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 1.25rem; }
+  .card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .card .card-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.5rem; }
+
+  .form-row { margin-bottom: 14px; }
+  .form-row label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border2); border-radius: var(--radius);
+    font-size: 14px; font-family: inherit; background: #fff; color: var(--text);
+  }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  .form-row textarea { resize: vertical; min-height: 70px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .required { color: var(--red); }
+
+  /* product grid */
+  .product-grid { display: flex; flex-direction: column; gap: 10px; }
+  .product-row { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; background: var(--bg); }
+  .product-row.has-qty { border-color: var(--accent); background: var(--accent-light); }
+  .product-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .product-meta { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+  .size-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .size-input-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .size-label { font-size: 10px; color: var(--text3); text-transform: uppercase; font-weight: 500; }
+  .size-qty { width: 44px; padding: 5px 4px; border: 1px solid var(--border2); border-radius: 6px; font-size: 13px; text-align: center; font-family: inherit; background: #fff; color: var(--text); }
+  .size-qty:focus { outline: none; border-color: var(--accent); }
+
+  /* terms */
+  .terms-box { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 1.25rem; max-height: 220px; overflow-y: auto; }
+  .terms-box h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+  .terms-box ul { padding-left: 1.25rem; }
+  .terms-box li { margin-bottom: 6px; }
+  .checkbox-row { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+  .checkbox-row input[type="checkbox"] { margin-top: 2px; width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--accent); cursor: pointer; }
+  .checkbox-row span { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+  /* order summary */
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 1rem; }
+  .summary-table th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .summary-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .summary-table .total-row td { font-weight: 600; border-bottom: none; padding-top: 12px; }
+  .empty-order { text-align: center; padding: 1.5rem; color: var(--text3); font-size: 13px; }
+
+  /* buttons */
+  .btn { padding: 10px 22px; border: 1px solid var(--border2); border-radius: var(--radius); background: transparent; cursor: pointer; font-size: 14px; font-family: inherit; color: var(--text); font-weight: 500; }
+  .btn:hover { background: var(--bg2); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.primary:hover { background: #235e6c; }
+  .btn.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
+  .btn-row.right { justify-content: flex-end; }
+
+  /* success */
+  .success-screen { text-align: center; padding: 3rem 1rem; }
+  .success-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 28px; }
+  .success-screen h2 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+  .success-screen p { font-size: 14px; color: var(--text2); line-height: 1.7; max-width: 400px; margin: 0 auto; }
+
+  .error-msg { color: var(--red); font-size: 12px; margin-top: 6px; }
+  .field-error { border-color: var(--red) !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img src="boardwalk-boys-logo.png" alt="Boardwalk Boys" onerror="this.style.display='none';document.getElementById('wordmark').style.display='block'">
+  <div id="wordmark" style="display:none">
+    <div class="header-wordmark">Boardwalk Boys</div>
+  </div>
+  <div class="header-sub">Wholesale Onboarding</div>
+</div>
+
+<div class="container">
+
+  <!-- Step indicator -->
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot-1">1</div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="dot-2">2</div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="dot-3">3</div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-dot" id="dot-4">4</div>
+  </div>
+
+  <!-- Step 1: Store Info -->
+  <div class="step active" id="step-1">
+    <div class="card">
+      <h2>Tell us about your store</h2>
+      <p class="card-sub">We'll use this to set up your wholesale account.</p>
+
+      <div class="form-row">
+        <label>Store name <span class="required">*</span></label>
+        <input id="s-storename" placeholder="The Little Anchor">
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Buyer first name <span class="required">*</span></label>
+          <input id="s-firstname" placeholder="Sarah">
+        </div>
+        <div class="form-row">
+          <label>Buyer last name <span class="required">*</span></label>
+          <input id="s-lastname" placeholder="Johnson">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Email <span class="required">*</span></label>
+        <input id="s-email" type="email" placeholder="sarah@thelittleanchor.com">
+      </div>
+      <div class="form-row">
+        <label>Phone</label>
+        <input id="s-phone" placeholder="(555) 000-0000">
+      </div>
+      <div class="form-row">
+        <label>Store address <span class="required">*</span></label>
+        <input id="s-address" placeholder="123 Main St">
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>City <span class="required">*</span></label>
+          <input id="s-city" placeholder="Brooklyn">
+        </div>
+        <div class="form-row">
+          <label>State <span class="required">*</span></label>
+          <input id="s-state" placeholder="NY">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Website</label>
+        <input id="s-website" placeholder="www.thelittleanchor.com">
+      </div>
+      <div class="form-row">
+        <label>Sales tax ID / resale number <span class="required">*</span></label>
+        <input id="s-taxid" placeholder="Tax ID or resale certificate number">
+      </div>
+      <div class="form-row">
+        <label>How did you hear about us?</label>
+        <select id="s-referral">
+          <option value="">— select —</option>
+          <option>Instagram</option>
+          <option>A fellow buyer / word of mouth</option>
+          <option>Trade show</option>
+          <option>Faire</option>
+          <option>Google search</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" onclick="goStep2()">Next — Place your order →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Order -->
+  <div class="step" id="step-2">
+    <div class="card">
+      <h2>Place your opening order</h2>
+      <p class="card-sub">Opening order minimum: $450. Enter quantities by size for each style you'd like.</p>
+      <div id="product-list" class="product-grid">
+        <div style="text-align:center;padding:2rem;color:var(--text3)">Loading products...</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="goToStep(1)">← Back</button>
+      <button class="btn primary" onclick="goStep3()">Next — Review order →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Review -->
+  <div class="step" id="step-3">
+    <div class="card">
+      <h2>Review your order</h2>
+      <p class="card-sub">Make sure everything looks right before submitting.</p>
+      <div id="order-summary"></div>
+    </div>
+    <div class="card">
+      <h2>Wholesale terms</h2>
+      <div class="terms-box">
+        <h4>Boardwalk Boys — Wholesale Terms & Conditions</h4>
+        <ul>
+          <li><strong>Opening order minimum:</strong> $450</li>
+          <li><strong>Reorder minimum:</strong> $250</li>
+          <li><strong>Sizes available:</strong> 2T, 3T, 4T, 5T, YS, YM, YL, YXL</li>
+          <li><strong>Shipping:</strong> Billed at cost and added to the invoice. Boardwalk Boys is not responsible for lost or damaged packages once shipped.</li>
+          <li><strong>Lead time:</strong> Orders ship within 5–7 business days of payment receipt.</li>
+          <li><strong>Payment:</strong> Payment is due in full before orders are processed. We accept major credit cards and bank transfer.</li>
+          <li><strong>Returns & cancellations:</strong> All sales are final. We do not accept returns or exchanges on wholesale orders. If items arrive damaged, please contact us within 5 business days with photos.</li>
+          <li><strong>Exclusivity:</strong> Boardwalk Boys reserves the right to sell to multiple retailers in the same market.</li>
+          <li>By submitting this form, you confirm that you are an authorized buyer for your retail establishment and agree to all terms above.</li>
+        </ul>
+      </div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="terms-check">
+        <span>I have read and agree to the Boardwalk Boys wholesale terms and conditions.</span>
+      </label>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="goToStep(2)">← Back</button>
+      <button class="btn primary" id="submit-btn" onclick="submitOrder()">Submit order</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Success -->
+  <div class="step" id="step-4">
+    <div class="success-screen">
+      <div class="success-icon">🌊</div>
+      <h2>You're all set!</h2>
+      <p>Thanks for your order. We've received everything and will be in touch within 1–2 business days to confirm and send your invoice.</p>
+      <p style="margin-top:1rem">Questions? Email us at <strong>hello@boardwalkboys.com</strong></p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://iqbilzsyqatjwwrtafjq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_2O_1hj0I6wfToTFSPtbi2Q_d3HyyIfz';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const SIZES = ['2T','3T','4T','5T','YS','YM','YL','YXL'];
+let products = [];
+let orderData = {};
+
+async function loadProducts() {
   const { data } = await sb.from('products').select('*').order('name');
   products = data || [];
   renderProductList();
