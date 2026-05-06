@@ -739,18 +739,27 @@ async function renderProducts(){
       <button class="btn" onclick="openLinesheetModal()">import from line sheet</button>
     </div>
     ${!products.length?'<div class="empty">No products yet.</div>':`
-    <table><thead><tr><th>Style</th><th>SKU</th><th>Sizes</th><th>Wholesale</th><th>Retail</th><th></th></tr></thead>
-    <tbody>${products.map(p=>`<tr>
+    <table><thead><tr><th>Style</th><th>SKU</th><th>Sizes</th><th>Wholesale</th><th>Retail</th><th>Available</th><th></th></tr></thead>
+    <tbody>${products.map(p=>`<tr style="opacity:${p.active===false?0.45:1}">
       <td><strong>${p.name}</strong>${p.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${p.notes}</div>`:''}</td>
       <td style="color:var(--text2);font-size:12px">${p.sku||'—'}</td>
       <td style="font-size:12px">${p.sizes||'—'}</td>
-      <td>$${parseFloat(p.price||0).toFixed(2)}</td>
-      <td>$${parseFloat(p.retail||0).toFixed(2)}</td>
+      <td>${parseFloat(p.price||0).toFixed(2)}</td>
+      <td>${parseFloat(p.retail||0).toFixed(2)}</td>
+      <td>
+        <button class="btn sm ${p.active===false?'':'primary'}" onclick="toggleProduct('${p.id}',${p.active===false})">
+          ${p.active===false?'Off — toggle on':'On — toggle off'}
+        </button>
+      </td>
       <td>
         <button class="btn sm" onclick="editProduct('${p.id}',${JSON.stringify(p).replace(/"/g,'&quot;')})">edit</button>
         <button class="btn sm danger" onclick="deleteProduct('${p.id}')">del</button>
       </td>
     </tr>`).join('')}</tbody></table>`}`;
+}
+async function toggleProduct(id, currentlyOff) {
+  await sb.from('products').update({active: currentlyOff}).eq('id', id);
+  await renderProducts();
 }
 function openAddProduct(){editProductId=null;document.getElementById('mprod-title').textContent='Add product';['name','sku','sizes','notes'].forEach(f=>document.getElementById('mp-'+f).value='');document.getElementById('mp-price').value='';document.getElementById('mp-retail').value='';openModal('modal-product');}
 function editProduct(id,p){if(typeof p==='string')p=JSON.parse(p.replace(/&quot;/g,'"'));editProductId=id;document.getElementById('mprod-title').textContent='Edit product';document.getElementById('mp-name').value=p.name||'';document.getElementById('mp-sku').value=p.sku||'';document.getElementById('mp-sizes').value=p.sizes||'';document.getElementById('mp-price').value=p.price||'';document.getElementById('mp-retail').value=p.retail||'';document.getElementById('mp-notes').value=p.notes||'';openModal('modal-product');}
