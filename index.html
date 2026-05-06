@@ -318,6 +318,20 @@
 </div>
 
 <script>
+// ---- PASSWORD GATE ----
+(function(){
+  const correct = 'OceanboysbH';
+  const key = 'bb_auth';
+  if(sessionStorage.getItem(key) !== correct) {
+    const pwd = prompt('Enter password to access Boardwalk Boys OS:');
+    if(pwd !== correct) {
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#7a6e5f;font-size:14px">Incorrect password.</div>';
+      throw new Error('Access denied');
+    }
+    sessionStorage.setItem(key, correct);
+  }
+})();
+
 const SUPABASE_URL = 'https://iqbilzsyqatjwwrtafjq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_2O_1hj0I6wfToTFSPtbi2Q_d3HyyIfz';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
